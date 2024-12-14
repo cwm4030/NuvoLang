@@ -6,4 +6,9 @@ public static class Nuvo
     {
 
     }
+
+    public static void Error(string message, int line)
+    {
+        
+    }
 }
