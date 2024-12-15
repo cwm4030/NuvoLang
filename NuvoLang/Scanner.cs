@@ -103,8 +103,8 @@ public class Scanner(string source)
         {
             type = TokenType.Float;
             Advance();
+            while (IsDigit(Peek()) && !IsAtEnd()) Advance();
         }
-        while (IsDigit(Peek()) && !IsAtEnd()) Advance();
 
         var s = _source[_start.._current];
         if (type == TokenType.Integer)
