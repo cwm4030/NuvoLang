@@ -7,6 +7,26 @@ public class Scanner(string source)
     private int _start = 0;
     private int _current = 0;
     private int _line = 0;
+    private static readonly Dictionary<string, TokenType> _keywords = new()
+    {
+        { "fn", TokenType.Fn },
+        { "and", TokenType.And },
+        { "or", TokenType.Or },
+        { "type", TokenType.Type },
+        { "if", TokenType.If },
+        { "then", TokenType.Then },
+        { "else", TokenType.Else },
+        { "end", TokenType.End },
+        { "while", TokenType.While },
+        { "true", TokenType.True },
+        { "false", TokenType.False },
+        { "nil", TokenType.Nil },
+        { "print", TokenType.Print },
+        { "ret", TokenType.Ret },
+        { "var", TokenType.Var },
+        { "val", TokenType.Val },
+        { "this", TokenType.This }
+    };
 
     public List<Token> ScanTokens()
     {
@@ -15,6 +35,7 @@ public class Scanner(string source)
             _start = _current;
             ScanToken();
         }
+        _start = _current;
         AddToken(TokenType.Eof);
         return _tokens;
     }
@@ -48,20 +69,42 @@ public class Scanner(string source)
             case '"': ScanString(); break;
             default:
                 if (IsDigit(c)) ScanNumber();
+                else if (IsAlpha(c)) ScanIdentifier();
+                else Nuvo.Error("Unexpected character.", _line);
                 break;
         }
+    }
+
+    private void ScanIdentifier()
+    {
+        while (IsAlphaNumeric(Peek()) && !IsAtEnd()) Advance();
+        var s = _source[_start.._current];
+        if (_keywords.TryGetValue(s, out var tokenType)) AddToken(tokenType);
+        else AddToken(TokenType.Identifier);
+    }
+
+    private static bool IsAlphaNumeric(char c)
+    {
+        return IsAlpha(c) || IsDigit(c);
+    }
+
+    private static bool IsAlpha(char c)
+    {
+        return (c >= 'a' && c <= 'z')
+            || (c >= 'A' && c <= 'Z')
+            || c == '_';
     }
 
     private void ScanNumber()
     {
         var type = TokenType.Integer;
-        while (IsDigit(Peek()) || !IsAtEnd()) Advance();
+        while (IsDigit(Peek()) && !IsAtEnd()) Advance();
         if (Peek() == '.' && IsDigit(PeekNext()))
         {
             type = TokenType.Float;
             Advance();
         }
-        while (IsDigit(Peek()) || !IsAtEnd()) Advance();
+        while (IsDigit(Peek()) && !IsAtEnd()) Advance();
 
         var s = _source[_start.._current];
         if (type == TokenType.Integer)
