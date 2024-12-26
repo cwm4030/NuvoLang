@@ -8,6 +8,11 @@ public enum TokenType
     Slash,
     LeftParen,
     RightParen,
+    LeftBracket,
+    RightBracket,
+    LeftBrace,
+    RightBrace,
+    SemiColon,
     Comma,
     Bang,
     BangEqual,
@@ -39,5 +44,6 @@ public enum TokenType
     Var,
     Val,
     This,
+    Invalid,
     Eof
 }

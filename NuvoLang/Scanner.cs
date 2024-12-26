@@ -6,7 +6,9 @@ public class Scanner(string source)
     private readonly List<Token> _tokens = [];
     private int _start = 0;
     private int _current = 0;
-    private int _line = 0;
+    private int _line = 1;
+    private int _column = 0;
+    private int _tokenColumn = 0;
     private static readonly Dictionary<string, TokenType> _keywords = new()
     {
         { "fn", TokenType.Fn },
@@ -43,6 +45,7 @@ public class Scanner(string source)
     private void ScanToken()
     {
         var c = Advance();
+        _tokenColumn = _column;
         switch (c)
         {
             case '+': AddToken(TokenType.Plus); break;
@@ -56,6 +59,11 @@ public class Scanner(string source)
                 break;
             case '(': AddToken(TokenType.LeftParen); break;
             case ')': AddToken(TokenType.RightParen); break;
+            case '[': AddToken(TokenType.LeftBracket); break;
+            case ']': AddToken(TokenType.RightBracket); break;
+            case '{': AddToken(TokenType.LeftBrace); break;
+            case '}': AddToken(TokenType.RightBrace); break;
+            case ';': AddToken(TokenType.SemiColon); break;
             case ',': AddToken(TokenType.Comma); break;
             case '!': AddToken(Match('=') ? TokenType.BangEqual : TokenType.Bang); break;
             case '=': AddToken(Match('=') ? TokenType.EqualEqual : TokenType.Equal); break;
@@ -65,7 +73,7 @@ public class Scanner(string source)
             case '\t':
             case '\r':
                 break;
-            case '\n': _line += 1; break;
+            case '\n': _line += 1; _column = 0; break;
             case '"': ScanString(); break;
             default:
                 if (IsDigit(c)) ScanNumber();
@@ -122,7 +130,11 @@ public class Scanner(string source)
     {
         while (Peek() != '"' && !IsAtEnd())
         {
-            if (Peek() == '\n') _line += 1;
+            if (Peek() == '\n')
+            {
+                _line += 1;
+                _column = 0;
+            }
             Advance();
         }
 
@@ -144,7 +156,8 @@ public class Scanner(string source)
             Type = type,
             Lexemme = _source[_start.._current],
             Literal = literal,
-            Line = _line
+            Line = _line,
+            Column = _tokenColumn
         });
     }
 
@@ -168,6 +181,7 @@ public class Scanner(string source)
     private char Advance()
     {
         _current += 1;
+        _column += 1;
         return _source[_current - 1];
     }
 
